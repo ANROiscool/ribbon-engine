@@ -88,7 +88,7 @@ def generateButtonAction():
     """The function ran when the Generate button is clicked. Handles grabbing input, getting the ribbon image, scaling it for display, and setting global functions to store the image."""
     selectedRibbons = [a[1] for a in ribbons.items() if ribbonCheckboxStates[a[0]].get()]
     selectedCommendations = [a[1] for a in commendations.items() if commendationCheckboxStates[a[0]].get()]
-    nameText = "".join(character for character in nametapeEntry.get() if character.isalpha() or character == " ").upper() # convert to only uppercase letters and spaces
+    nameText = "".join(character for character in nametapeEntry.get() if character.isalnum() or character == " ").upper() # convert to only uppercase letters and spaces
     goldenApel: bool = goldenApelState.get()
     
     global img
