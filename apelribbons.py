@@ -108,9 +108,10 @@ def saveButtonAction():
     saveFilePath = filedialog.asksaveasfilename(filetypes=[("Portable Network Graphics file", "*.png"), ("All Files", "*.*")], title="Save Ribbons T-Shirt", defaultextension=".png")
     if not saveFilePath:
         return
-    img.show()
+    img.save(saveFilePath)
 
 saveButton = ttk.Button(root, text="Save T-Shirt", command=saveButtonAction)
 saveButton.pack()
+
 
 root.mainloop()
