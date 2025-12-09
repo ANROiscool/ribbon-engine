@@ -117,6 +117,7 @@ def loadShirtFromMeta(shirt: PILImage.Image):
     generateButtonAction()
 
 def loadButtonAction():
+    """The function ran when the Load from Shirt button is clicked. Handles the file dialog and validation."""
     pathToShirt = filedialog.askopenfilename(filetypes=[("PNG Image", "*.png"), ("All Files", "*.*")])
     if not pathToShirt:
         return
