@@ -10,7 +10,7 @@ currentDir = os.path.dirname(__file__)
 
 shirtMeta = {}
 
-def generateTShirtImage(ribbons: list[PILImage.Image], commendations: list[PILImage.Image], nameText: str, goldenApel: bool) -> PILImage.Image:
+def generateTShirtImage(ribbons: list[PILImage.Image], commendations: list[PILImage.Image], nameText: str, awards: list[PILImage.Image]) -> PILImage.Image:
     """Creates a t-shirt image from the awards and name provided, in the Apel awards style.
 
     Args:
@@ -26,6 +26,7 @@ def generateTShirtImage(ribbons: list[PILImage.Image], commendations: list[PILIm
 
     ribbonGrid = shirtmaker.arrangeRibbons(ribbons, ribbonsPerRow=3, outlineColorRGBA=(0, 0, 0, 255))
     commendationGrid = shirtmaker.arrangeRibbons(commendations, ribbonDimensions=(7, 2), ribbonsPerRow=3, outlineColorRGBA=(0, 0, 0, 255))
+    awardsGrid = shirtmaker.arrangeRibbons(awards, ribbonDimensions=(17, 17), ribbonsPerRow=2, outlineColorRGBA=(0, 0, 0, 0))
     nametapeTemplate = PILImage.open(os.path.join(currentDir, "apel/nametape.png"))
     anroFont = ImageFont.load(os.path.join(currentDir, "anrofont/anrofont.pil"))
     goldenApelImage = PILImage.open(os.path.join(currentDir, "apel/awards/Golden Apel.png"))
@@ -34,9 +35,7 @@ def generateTShirtImage(ribbons: list[PILImage.Image], commendations: list[PILIm
     tShirt = shirtmaker.placeRibbonGrid(tShirt, ribbonGrid, (90, 19))
     tShirt = shirtmaker.placeRibbonGrid(tShirt, commendationGrid, (92, 73))
     tShirt = shirtmaker.placeRibbonGrid(tShirt, nametape, (7, 19))
-
-    if goldenApel:
-        tShirt = shirtmaker.placeRibbonGrid(tShirt, goldenApelImage, (17, 27))
+    tShirt = shirtmaker.placeRibbonGrid(tShirt, awardsGrid, (5, 27))
 
     return tShirt
 
@@ -50,6 +49,7 @@ main_frame.pack(padx=10, pady=10)
 
 ribbons: dict = shirtmaker.getRibbons(os.path.join(currentDir, "apel/ribbons"))
 commendations: dict = shirtmaker.getRibbons(os.path.join(currentDir, "apel/commendations"))
+awards: dict = shirtmaker.getRibbons(os.path.join(currentDir, "apel/awards"))
 
 img = shirtmaker.newTShirt()
 current_photo = ImageTk.PhotoImage(img)
@@ -78,15 +78,22 @@ for commendationName in commendations.keys():
     checkbox.pack(anchor="nw", side=TOP)
     commendationCheckboxStates[commendationName] = state
 
+awardPanel = ttk.Frame(root, padding=10)
+awardPanel.pack(padx=10, pady=10, side=LEFT, anchor="nw")
+ttk.Label(awardPanel, text="Awards").pack(anchor="nw", side=TOP)
+
+awardCheckboxStates: dict = {}
+for awardName in awards.keys():
+    state: BooleanVar = BooleanVar()
+    checkbox: ttk.Checkbutton = ttk.Checkbutton(awardPanel, text=awardName.split("\\")[-1][:-4], variable=state)
+    checkbox.pack(anchor="nw", side=TOP)
+    awardCheckboxStates[awardName] = state
+
 nametapeEntryFrame = ttk.Frame(root, padding=10)
 nametapeEntryFrame.pack(padx=10, pady=10)
 ttk.Label(nametapeEntryFrame, text="Nametape text:").grid(column=0, row=0)
 nametapeEntry = ttk.Entry(nametapeEntryFrame)
 nametapeEntry.grid(column=1, row=0)
-
-goldenApelState = BooleanVar()
-goldenApelCheckbox = ttk.Checkbutton(root, text="Golden Apel Medal", variable=goldenApelState)
-goldenApelCheckbox.pack(pady=10)
 
 def loadShirtFromMeta(shirt: PILImage.Image):
     """Sets all the inputs to recreate a t-shirt from its metadata, allowing it to be edited.
@@ -109,10 +116,14 @@ def loadShirtFromMeta(shirt: PILImage.Image):
         else:
             state.set(False)
 
+    for name, state in awardCheckboxStates.items():
+        if name in shirtdata["awards"]:
+            state.set(True)
+        else:
+            state.set(False)
+
     nametapeEntry.delete(0, END)
     nametapeEntry.insert(0, shirtdata["name-text"])
-
-    goldenApelState.set(shirtdata["apel-medal"])
 
     generateButtonAction()
 
@@ -131,20 +142,20 @@ def generateButtonAction():
     """The function ran when the Generate button is clicked. Handles grabbing input, getting the ribbon image, scaling it for display, and setting global functions to store the image."""
     selectedRibbons = {a[0]: a[1] for a in ribbons.items() if ribbonCheckboxStates[a[0]].get()}
     selectedCommendations = {a[0]: a[1] for a in commendations.items() if commendationCheckboxStates[a[0]].get()}
+    selectedAwards = {a[0]: a[1] for a in awards.items() if awardCheckboxStates[a[0]].get()}
     nameText = "".join(character for character in nametapeEntry.get() if character.isalnum() or character == " ").upper() # convert to only uppercase letters and spaces
-    goldenApel: bool = goldenApelState.get()
     
     global shirtMeta
     shirtMeta = {
         "ribbons": list(selectedRibbons.keys()),
         "commendations": list(selectedCommendations.keys()),
         "name-text": nameText,
-        "apel-medal": goldenApel
+        "awards": list(selectedAwards.keys())
     }
 
     # global to prevent garbage collection of image
     global img
-    img = generateTShirtImage(list(selectedRibbons.values()), list(selectedCommendations.values()), nameText, goldenApel)
+    img = generateTShirtImage(list(selectedRibbons.values()), list(selectedCommendations.values()), nameText, list(selectedAwards.values()))
     photo = ImageOps.scale(img, 2)
     photo = ImageTk.PhotoImage(photo)
     imageLabel.configure(image=photo)

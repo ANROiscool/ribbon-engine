@@ -24,6 +24,15 @@ def newTShirt() -> Image.Image:
 
     return Image.new("RGBA", (128, 128), (0, 0, 0, 0))
 
+def padImage(image: Image.Image, padLeft: int = 0, padRight: int = 0, padTop: int = 0, padBottom: int = 0):
+    originalDimensions: tuple[int, int] = image.size
+    newDimensions: tuple[int, int] = (originalDimensions[0] + padLeft + padRight, originalDimensions[1] + padTop + padBottom)
+    newImage: Image.Image = Image.new("RGBA", newDimensions, (0, 0, 0, 0))
+
+    newImage.paste(image, (padLeft, padTop))
+
+    return newImage
+
 def arrangeRibbons(ribbons: list[Image.Image], ribbonDimensions: tuple[int, int] = (9, 3), ribbonsPerRow: int = 4, outlineColorRGBA: tuple[int, int, int, int] = (80, 80, 80, 255)) -> Image.Image:
     """Arranges a given list of ribbons into the regular layout.
 
