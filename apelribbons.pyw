@@ -2,7 +2,7 @@ import shirtmaker
 from PIL import Image as PILImage
 from PIL import ImageFont, ImageTk, ImageOps, PngImagePlugin
 from tkinter import * # type: ignore
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, Wm
 import json
 import os
 
@@ -179,5 +179,8 @@ def saveButtonAction():
 saveButton = ttk.Button(root, text="Save T-Shirt", command=saveButtonAction)
 saveButton.pack()
 
+icon = PhotoImage(file=os.path.join(currentDir, "apel/icon.png"))
+root.iconphoto(False, icon)
+root.title("Apel Ribbon Engine")
 
 root.mainloop()
